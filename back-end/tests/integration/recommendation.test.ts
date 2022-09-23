@@ -142,6 +142,21 @@ describe("Test GET /recommendations/random", () => {
   });
 });
 
+describe("Test GET /recommendations/top/:amount", () => {
+  it("Should return an array with the top x recommended songs sorted by score", async () => {
+    const sortNumber = Math.floor(Math.random() * 11);
+
+    for (let i = 0; i < sortNumber; i++) {
+      await createSongInDatabase();
+    }
+
+    const response = await agent.get(`/recommendations/top/${sortNumber}`).send();
+
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body.length).toEqual(sortNumber);
+  });
+});
+
 afterAll(async () => {
   await prisma.$disconnect();
 });
