@@ -2,6 +2,7 @@ import supertest from "supertest";
 import app from "../../src/app.js";
 import { createSong } from "./factories/songFactory.js";
 import { prisma } from "../../src/database.js";
+import { createSongInDatabase } from "./factories/createSongFactory.js";
 
 const agent = supertest(app);
 
@@ -53,11 +54,7 @@ describe("Test POST /recommendations", () => {
 
 describe("Test POST /recommendations/:id/upvote", () => {
   it("Should return 200 if the song id is valid", async () => {
-    const song = await createSong();
-
-    await prisma.recommendation.create({
-      data: song,
-    });
+    await createSongInDatabase();
 
     const response = await agent.post("/recommendations/1/upvote").send();
 
@@ -73,11 +70,7 @@ describe("Test POST /recommendations/:id/upvote", () => {
 
 describe("Test POST /recommendations/:id/downvote", () => {
   it("Should return 200 if the song id is valid", async () => {
-    const song = await createSong();
-
-    await prisma.recommendation.create({
-      data: song,
-    });
+    await createSongInDatabase();
 
     const response = await agent.post("/recommendations/1/downvote").send();
 
@@ -91,13 +84,29 @@ describe("Test POST /recommendations/:id/downvote", () => {
   });
 });
 
-describe("Test GET /recommendations", () => {});
+describe("Test GET /recommendations", () => {
+  it("If the db has more than 10 songs registered, it should return an array with only the last 10 recommendations", async () => {
+    for (let i = 0; i < 11; i++) {
+      await createSongInDatabase();
+    }
 
-describe("Test GET /recommendations/:id", () => {});
+    const response = await agent.get("/recommendations").send();
 
-describe("Test GET /recommendations/random", () => {});
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body.length).toEqual(10);
+  });
 
-describe("Test GET /recommendations/top/:amount", () => {});
+  it("If the database has less than 10 songs registered, it must return an array with all the songs", async () => {
+    for (let i = 0; i < 5; i++) {
+      await createSongInDatabase();
+    }
+
+    const response = await agent.get("/recommendations").send();
+
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body.length).toEqual(5);
+  });
+});
 
 afterAll(async () => {
   await prisma.$disconnect();
