@@ -124,6 +124,24 @@ describe("Test GET /recommendations/:id", () => {
   });
 });
 
+describe("Test GET /recommendations/random", () => {
+  it("Should return an object if the db has a song registered", async () => {
+    for (let i = 0; i < 3; i++) {
+      await createSongInDatabase();
+    }
+
+    const response = await agent.get("/recommendations/random").send();
+
+    expect(response.body).toBeInstanceOf(Object);
+  });
+
+  it("Should return 404 if the db doesn't have a registered song", async () => {
+    const response = await agent.get("/recommendations/random").send();
+
+    expect(response.status).toEqual(404);
+  });
+});
+
 afterAll(async () => {
   await prisma.$disconnect();
 });
