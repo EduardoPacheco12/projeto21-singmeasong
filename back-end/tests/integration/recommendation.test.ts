@@ -108,6 +108,22 @@ describe("Test GET /recommendations", () => {
   });
 });
 
+describe("Test GET /recommendations/:id", () => {
+  it("Should return an object if a song id exists", async () => {
+    await createSongInDatabase();
+
+    const response = await agent.get("/recommendations/1").send();
+
+    expect(response.body).toBeInstanceOf(Object);
+  });
+
+  it("Should return 404 if the song id doesn't exist", async () => {
+    const response = await agent.get("/recommendations/1").send();
+
+    expect(response.status).toBe(404);
+  });
+});
+
 afterAll(async () => {
   await prisma.$disconnect();
 });
