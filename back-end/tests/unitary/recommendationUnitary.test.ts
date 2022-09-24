@@ -47,7 +47,17 @@ describe("Test function 'insert'", () => {
 
 /* describe("Test function 'getById'", () => {}); */
 
-/* describe("Test function 'get'", () => {}); */
+describe("Test function 'get'", () => {
+  it("Should return an array with the objects in db", async () => {
+    jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
+
+    const result = await recommendationService.get();
+
+    expect(recommendationRepository.findAll).toBeCalled();
+    expect(result).toBeInstanceOf(Array);
+  });
+  /*  */
+});
 
 /* describe("Test function 'getTop'", () => {}); */
 
