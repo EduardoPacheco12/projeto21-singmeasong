@@ -1,8 +1,8 @@
 import supertest from "supertest";
 import app from "../../src/app.js";
-import { createSong } from "./factories/songFactory.js";
+import { createSong } from "../factories/songFactory.js";
 import { prisma } from "../../src/database.js";
-import { createSongInDatabase } from "./factories/createSongFactory.js";
+import { createSongInDatabase } from "../factories/createSongFactory.js";
 
 const agent = supertest(app);
 

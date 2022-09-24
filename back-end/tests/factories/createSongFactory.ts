@@ -1,4 +1,4 @@
-import { prisma } from "../../../src/database";
+import { prisma } from "../../src/database";
 import { createYoutubeLink } from "./youtubeLinkFactory";
 import { faker } from "@faker-js/faker";
 
