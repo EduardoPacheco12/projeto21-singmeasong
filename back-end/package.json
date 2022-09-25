@@ -10,7 +10,7 @@
     "dev-start": "dotenv -e .env.test nodemon src/server.ts",
     "prisma": "prisma migrate dev",
     "dev-prisma": "dotenv -e .env.test prisma migrate dev",
-    "test": "dotenv -e .env.test jest --no-cache -i"
+    "test": "dotenv -e .env.test jest ../tests/unitary/recommendationUnitary.test.ts --no-cache -i"
   },
   "keywords": [],
   "author": "",

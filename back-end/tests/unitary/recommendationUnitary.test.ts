@@ -1,7 +1,6 @@
 import { recommendationService } from "../../src/services/recommendationsService";
 import { recommendationRepository } from "../../src/repositories/recommendationRepository";
 import { createSong } from "../factories/songFactory";
-import { conflictError, notFoundError } from "../../src/utils/errorUtils";
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -43,18 +42,18 @@ describe("Test function 'insert'", () => {
 describe("Test function 'upvote'", () => {
   it("The update function is expected to be called", async () => {
     const song = await createSong();
-    const number = Math.floor(Math.random() * (50 - 0) + 0);
+    const score = Math.floor(Math.random() * (50 - 0) + 0);
     jest.spyOn(recommendationService, "getById").mockResolvedValueOnce({
       id: 1,
       name: song.name,
       youtubeLink: song.youtubeLink,
-      score: number,
+      score: score,
     });
     jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
       id: 1,
       name: song.name,
       youtubeLink: song.youtubeLink,
-      score: number + 1,
+      score: score + 1,
     });
 
     await recommendationService.upvote(1);
@@ -78,7 +77,55 @@ describe("Test function 'upvote'", () => {
   });
 });
 
-/* describe("Test function 'downvote'", () => {}); */
+describe("Test function 'downvote'", () => {
+  it("The update function is expected to be called and if the score is below -5 the song is deleted", async () => {
+    const song = await createSong();
+    const score = Math.floor(Math.random() * (50 - 0) + 0);
+    jest.spyOn(recommendationService, "getById").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+    jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score - 1,
+    });
+    jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce();
+
+    await recommendationService.downvote(1);
+
+    expect(recommendationRepository.updateScore).toBeCalled();
+    if (score === -5) {
+      expect(recommendationRepository.remove).toBeCalled();
+    }
+  });
+
+  it("There is expected to be a not found error", async () => {
+    jest.spyOn(recommendationService, "getById").mockImplementationOnce((): any => {});
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
+    jest.spyOn(recommendationRepository, "updateScore").mockImplementationOnce((): any => {});
+    jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce();
+
+    const result = recommendationService.downvote(1);
+
+    expect(result).rejects.toEqual({
+      message: "",
+      type: "not_found",
+    });
+    expect(recommendationRepository.remove).not.toBeCalled();
+    expect(recommendationRepository.updateScore).not.toBeCalled();
+    expect(recommendationRepository.find).toBeCalled();
+  });
+});
 
 /* describe("Test function 'getById'", () => {}); */
 
