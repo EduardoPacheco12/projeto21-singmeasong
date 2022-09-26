@@ -43,7 +43,7 @@ describe("Test function 'upvote'", () => {
   it("The update function is expected to be called", async () => {
     const song = await createSong();
     const score = Math.floor(Math.random() * (50 - 0) + 0);
-    jest.spyOn(recommendationService, "getById").mockResolvedValueOnce({
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
       id: 1,
       name: song.name,
       youtubeLink: song.youtubeLink,
@@ -106,6 +106,8 @@ describe("Test function 'downvote'", () => {
     expect(recommendationRepository.updateScore).toBeCalled();
     if (score === -5) {
       expect(recommendationRepository.remove).toBeCalled();
+    } else {
+      expect(recommendationRepository.remove).not.toBeCalled();
     }
   });
 
@@ -153,7 +155,6 @@ describe("Test function 'getById'", () => {
     jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
 
     const result = recommendationService.getByIdOrFail(1);
-    console.log(result);
 
     expect(result).rejects.toEqual({
       message: "",
@@ -174,6 +175,30 @@ describe("Test function 'get'", () => {
   /*  */
 });
 
-/* describe("Test function 'getTop'", () => {}); */
+describe("Test function 'getTop'", () => {
+  it("It must return an array with the top x music recommendations that will have their amount defined by amount", async () => {
+    const array = [];
+    const amount = Math.floor(Math.random() * (50 - 0) + 0);
+    for (let i = 1; i <= amount; i++) {
+      const song = await createSong();
+      const sortScore = Math.floor(Math.random() * (50 - 0) + 0);
+      const recommendation = {
+        id: i,
+        ...song,
+        score: sortScore,
+      };
+      array.push(recommendation);
+    }
+    array.sort((x, y) => {
+      return y.score - x.score;
+    });
+    jest.spyOn(recommendationRepository, "getAmountByScore").mockResolvedValueOnce(array);
 
-/* describe("Test function 'getRandom'", () => {});  */
+    const result = await recommendationService.getTop(amount);
+
+    expect(result.length).toEqual(amount);
+    expect(result).toEqual(array);
+  });
+});
+
+/* describe("Test function 'getRandom'", () => {}); */
