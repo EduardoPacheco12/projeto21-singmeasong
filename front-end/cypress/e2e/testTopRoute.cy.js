@@ -4,8 +4,8 @@ beforeEach(async () => {
   await cy.cleanDb();
 });
 
-describe("Test enter in Random Route", () => {
-  it("Tests if returns 10 songs or less", async () => {
+describe("Test enter in Top Route", () => {
+  it("Tests if returns only one random recommendation song", async () => {
     const song = await createSong();
     cy.intercept("GET", "/").as("getRecommendations");
 
@@ -19,11 +19,11 @@ describe("Test enter in Random Route", () => {
         cy.get('[data-cy="submit"]')
           .click()
           .then(() => {
-            cy.get('[data-cy="top"]')
+            cy.get('[data-cy="random"]')
               .click()
               .then(() => {
-                cy.get('[data-cy="score"]').should("have.length.lessThan", 11);
-                cy.url().should("equal", "http://localhost:3000/top");
+                cy.get('[data-cy="score"]').should("have.length", 1);
+                cy.url().should("equal", "http://localhost:3000/random");
               });
           });
       });
