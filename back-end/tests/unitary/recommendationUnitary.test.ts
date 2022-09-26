@@ -201,4 +201,66 @@ describe("Test function 'getTop'", () => {
   });
 });
 
-/* describe("Test function 'getRandom'", () => {}); */
+describe("Test function 'getRandom'", () => {
+  it("Test the case if you have both types of recommendation", async () => {
+    const number = Math.random();
+    const songGT = await createSong();
+    const songLTE = await createSong();
+    jest.spyOn(global.Math, "random").mockReturnValueOnce(number);
+    if (number < 0.7) {
+      jest.spyOn(recommendationService, "getScoreFilter").mockReturnValueOnce("gt");
+      jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([
+        {
+          id: 1,
+          name: songGT.name,
+          youtubeLink: songGT.youtubeLink,
+          score: 15,
+        },
+      ]);
+    } else {
+      jest.spyOn(recommendationService, "getScoreFilter").mockReturnValueOnce("lte");
+      jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
+    }
+    jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([
+      {
+        id: 1,
+        name: songLTE.name,
+        youtubeLink: songLTE.youtubeLink,
+        score: 5,
+      },
+    ]);
+
+    const result = await recommendationService.getRandom();
+
+    if (number < 0.7) {
+      expect(result).toEqual({
+        id: 1,
+        name: songGT.name,
+        youtubeLink: songGT.youtubeLink,
+        score: 15,
+      });
+    } else {
+      expect(result).toEqual({
+        id: 1,
+        name: songLTE.name,
+        youtubeLink: songLTE.youtubeLink,
+        score: 5,
+      });
+    }
+  });
+
+  it("There is expected to be a not found error", async () => {
+    jest.spyOn(global.Math, "random").mockReturnValueOnce(0.8);
+    jest.spyOn(recommendationService, "getScoreFilter").mockReturnValueOnce("lte");
+    jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
+    jest.spyOn(recommendationRepository, "findAll").mockResolvedValueOnce([]);
+
+    const result = recommendationService.getRandom();
+    console.log(result);
+
+    await expect(result).rejects.toEqual({
+      message: "",
+      type: "not_found",
+    });
+  });
+});
