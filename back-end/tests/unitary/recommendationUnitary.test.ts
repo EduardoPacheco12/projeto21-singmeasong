@@ -93,13 +93,13 @@ describe("Test function 'downvote'", () => {
       youtubeLink: song.youtubeLink,
       score: score,
     });
+    jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce();
     jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
       id: 1,
       name: song.name,
       youtubeLink: song.youtubeLink,
       score: score - 1,
     });
-    jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce();
 
     await recommendationService.downvote(1);
 
@@ -127,7 +127,40 @@ describe("Test function 'downvote'", () => {
   });
 });
 
-/* describe("Test function 'getById'", () => {}); */
+describe("Test function 'getById'", () => {
+  it("Should return an object in db", async () => {
+    const song = await createSong();
+    const score = Math.floor(Math.random() * (50 - 0) + 0);
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+
+    const result = await recommendationRepository.find(1);
+
+    expect(recommendationRepository.find).toBeCalled();
+    expect(result).toEqual({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+  });
+
+  it("There is expected to return a not found error", async () => {
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce(null);
+
+    const result = recommendationService.getByIdOrFail(1);
+    console.log(result);
+
+    expect(result).rejects.toEqual({
+      message: "",
+      type: "not_found",
+    });
+  });
+});
 
 describe("Test function 'get'", () => {
   it("Should return an array with the objects in db", async () => {
