@@ -78,9 +78,41 @@ describe("Test function 'upvote'", () => {
 });
 
 describe("Test function 'downvote'", () => {
+  it("The update function is expected to be called", async () => {
+    const song = await createSong();
+    const score = Math.floor(Math.random() * (50 - -5) + -5);
+    jest.spyOn(recommendationService, "getById").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+    jest.spyOn(recommendationRepository, "find").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score,
+    });
+    jest.spyOn(recommendationRepository, "remove").mockResolvedValueOnce();
+    jest.spyOn(recommendationRepository, "updateScore").mockResolvedValueOnce({
+      id: 1,
+      name: song.name,
+      youtubeLink: song.youtubeLink,
+      score: score - 1,
+    });
+
+    await recommendationService.downvote(1);
+
+    expect(recommendationRepository.updateScore).toBeCalled();
+    if (score === -5) {
+      expect(recommendationRepository.remove).toBeCalled();
+    } else {
+      expect(recommendationRepository.remove).not.toBeCalled();
+    }
+  });
   it("The update function is expected to be called and if the score is below -5 the song is deleted", async () => {
     const song = await createSong();
-    const score = Math.floor(Math.random() * (50 - 0) + 0);
+    const score = -5;
     jest.spyOn(recommendationService, "getById").mockResolvedValueOnce({
       id: 1,
       name: song.name,
