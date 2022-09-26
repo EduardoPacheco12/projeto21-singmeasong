@@ -4,8 +4,8 @@ beforeEach(async () => {
   await cy.cleanDb();
 });
 
-describe("Test give a upvote", () => {
-  it("Test if you can upvote a song recommendation", async () => {
+describe("Test give a downvote", () => {
+  it("Test if you can downvote a song recommendation and if the song recommendation below -5, it will be deleted", async () => {
     const song = await createSong();
     cy.intercept("GET", "/").as("getRecommendations");
 
@@ -19,10 +19,15 @@ describe("Test give a upvote", () => {
         cy.get('[data-cy="submit"]')
           .click()
           .then(() => {
-            cy.get('[data-cy="ArrowUp"]')
+            cy.get('[data-cy="ArrowDown"]').click();
+            cy.get('[data-cy="ArrowDown"]').click();
+            cy.get('[data-cy="ArrowDown"]').click();
+            cy.get('[data-cy="ArrowDown"]').click();
+            cy.get('[data-cy="ArrowDown"]').click();
+            cy.get('[data-cy="ArrowDown"]')
               .click()
               .then(() => {
-                cy.get('[data-cy="score"]').should("contain.text", "1");
+                cy.get('[data-cy="score"]').should("not.exist");
                 cy.url().should("equal", "http://localhost:3000/");
               });
           });
